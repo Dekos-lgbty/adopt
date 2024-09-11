@@ -1,0 +1,103 @@
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+
+-- Настройки основного фрейма
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 300, 0, 300)
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = MainFrame
+
+-- Перетаскивание фрейма
+local dragging
+local dragInput
+local startPos
+local function updateInput(input)
+ if dragging then
+  MainFrame.Position = UDim2.new(MainFrame.Position.X.Scale, startPos.X.Offset + input.Position.X, MainFrame.Position.Y.Scale, startPos.Y.Offset + input.Position.Y)
+ end
+end
+MainFrame.InputBegan:Connect(function(input)
+ if input.UserInputType == Enum.UserInputType.MouseButton1 then
+  dragging = true
+  startPos = UDim2.new(0, MainFrame.Position.X.Offset, 0, MainFrame.Position.Y.Offset)
+  dragInput = input
+ end
+end)
+
+MainFrame.InputEnded:Connect(function(input)
+ if input == dragInput then
+  dragging = false
+ end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(updateInput)
+
+-- Функция для создания кнопки с индикатором загрузки
+local function createButton(text, position)
+ local button = Instance.new("TextButton")
+ button.Parent = MainFrame
+ button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ button.Size = UDim2.new(1, -20, 0, 50)
+ button.Position = position
+ button.Text = text
+ button.TextColor3 = Color3.fromRGB(255, 255, 255)
+ button.Font = Enum.Font.SourceSansBold
+ button.TextSize = 20
+ button.AutoButtonColor = false
+ local UICornerButton = Instance.new("UICorner", button)
+ UICornerButton.CornerRadius = UDim.new(0, 10)
+
+ -- Индикатор загрузки
+ local progressBar = Instance.new("Frame")
+ progressBar.Parent = button
+ progressBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+ progressBar.Size = UDim2.new(0, 0, 0, 5)
+ progressBar.Position = UDim2.new(0, 0, 1, 0)
+
+ -- Анимация нажатия кнопки
+ button.MouseButton1Down:Connect(function()
+  button.BackgroundColor3 = Color3.fromRGB(80, 80, 80) -- Темный цвет при нажатии
+ end)
+ button.MouseButton1Up:Connect(function()
+  button.BackgroundColor3 = Color3.fromRGB(60, 60, 60) -- Светлый цвет после нажатия
+
+  -- Запуск индикатора загрузки
+  progressBar.Size = UDim2.new(0, 0, 0, 5) -- Сброс размера индикатора
+  progressBar:TweenSize(UDim2.new(1, 0, 0, 5), "Out", "Quad", 1, true, function()
+   -- Завершение действия после загрузки
+   if text == "Trade Scam" then
+    print("Trade Scam нажата!")
+   elseif text == "Hide Godlies" then
+    print("Hide Godlies нажата!")
+   elseif text == "Freeze Trade" then
+    print("Freeze Trade нажата!")
+   end
+   progressBar.Size = UDim2.new(0, 0, 0, 5) -- Возврат размера обратно
+  end)
+ end)
+
+ -- Простая анимация при наведении мыши
+ button.MouseEnter:Connect(function()
+  button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+ end)
+ button.MouseLeave:Connect(function()
+  if not dragging then
+   button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+  end
+ end)
+
+ return button
+end
+
+-- Создание кнопок
+createButton("Dupe pets", UDim2.new(0, 10, 0, 40))
+createButton("Bypass Anticheat", UDim2.new(0, 10, 0, 100))
+createButton("Trade Scam", UDim2.new(0, 10, 0, 160))
+
+-- Вставка GUI в Player
+ScreenGui.Parent = Player:WaitForChild("PlayerGui")
